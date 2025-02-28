@@ -194,6 +194,7 @@ st.markdown("""
         font-weight: 600 !important;
         border: none !important;
         transition: all 0.2s !important;
+        margin-left: auto;
     }
 
     .stButton > button:hover {
@@ -201,18 +202,18 @@ st.markdown("""
         transform: translateY(-1px);
     }
 
-    /* Make the send button float right */
-    .stButton > button {
-        position: absolute;
-        right: 2rem;
-        bottom: 1rem;
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .input-container {
+            padding: 1rem;
+        }
+        
+        .stTextArea textarea, .stButton > button {
+            font-size: 14px;
+            padding: 10px;
+        }
     }
-
-    /* Ensure main content isn't hidden */
-    .main {
-        padding-bottom: 120px !important;
-    }
-
+    
     /* Button styling */
     .stButton > button {
         background-color: #3b82f6 !important;
@@ -223,12 +224,12 @@ st.markdown("""
         border: none !important;
         transition: all 0.2s !important;
     }
-
+    
     .stButton > button:hover {
         background-color: #2563eb !important;
         transform: translateY(-1px);
     }
-
+    
     /* Title styling */
     h1 {
         color: #60a5fa !important;
@@ -237,39 +238,39 @@ st.markdown("""
         margin-bottom: 0.5rem !important;
         text-align: center;
     }
-
+    
     .subtitle {
         color: #94a3b8;
         text-align: center;
         font-size: 1.1rem;
         margin-bottom: 2rem;
     }
-
+    
     /* Loading spinner */
     .stSpinner > div {
         border-color: #3b82f6 !important;
     }
-
+    
     /* Scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
     }
-
+    
     ::-webkit-scrollbar-track {
         background: var(--chat-background);
         border-radius: 4px;
     }
-
+    
     ::-webkit-scrollbar-thumb {
         background: #4b5563;
         border-radius: 4px;
     }
-
+    
     ::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
     }
-
+    
     /* Chat container max height */
     .main {
         padding-bottom: 120px !important;
@@ -278,6 +279,76 @@ st.markdown("""
     /* Dark theme overrides for Streamlit elements */
     .stMarkdown, .stMarkdown p {
         color: var(--text-color) !important;
+    }
+</style>
+
+<script>
+// Handle Enter and Shift+Enter in textarea
+const textareas = document.getElementsByTagName('textarea');
+for (let textarea of textareas) {
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const sendButton = document.querySelector('button[kind="primary"]');
+            if (sendButton) sendButton.click();
+        }
+    });
+}
+</script>
+""", unsafe_allow_html=True)
+
+# Fix input styling and button positioning
+st.markdown("""
+<style>
+    /* Ensure input container is fixed at bottom */
+    .stForm {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--background-color);
+        padding: 1rem 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Dark input styling */
+    .stTextInput > div > div > input {
+        background-color: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        font-size: 16px !important;
+    }
+
+    .stTextInput > div > div > input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+
+    /* Send button styling */
+    .stButton > button {
+        position: absolute;
+        right: 2rem;
+        bottom: 1.5rem;
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-1px);
+    }
+
+    /* Ensure main content isn't hidden */
+    .main {
+        padding-bottom: 120px !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -345,9 +416,10 @@ if submit and user_input:
         try:
             # Call Groq API
             completion = client.chat.completions.create(
-                messages=[{
-                    "role": "system",
-                    "content": """You are a friendly and knowledgeable AI assistant who can help with any topic. IMPORTANT RULES:
+                messages=[
+                    {
+                        "role": "system",
+                        "content": """You are a friendly and knowledgeable AI assistant who can help with any topic. IMPORTANT RULES:
 1. NEVER show your thinking process or include any meta tags
 2. NEVER mention that you are an AI model or any specific model name
 3. Just respond directly and naturally to questions
@@ -364,8 +436,8 @@ if submit and user_input:
    - Use > for important quotes or highlights
 7. Keep responses clear and well-structured
 8. Be warm, friendly and conversational"""
-                }
-            ] + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                    }
+                ] + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 model="deepseek-r1-distill-llama-70b",
                 temperature=0.7,
                 max_tokens=2048,
