@@ -39,9 +39,36 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Title
+st.title("💬 AI Chat Assistant")
+st.markdown("Ask me anything! I'm here to help with any topic.")
+
+# Get API key from environment or secrets
+def get_api_key():
+    # First try getting from streamlit secrets
+    api_key = st.secrets.get("GROQ_API_KEY", None)
+    if api_key:
+        return api_key
+    
+    # Then try environment variable
+    api_key = os.getenv("GROQ_API_KEY")
+    if api_key:
+        return api_key
+    
+    return None
+
 # Initialize Groq client
-GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-client = Groq(api_key=GROQ_API_KEY)
+GROQ_API_KEY = get_api_key()
+
+if not GROQ_API_KEY:
+    st.error("⚠️ GROQ_API_KEY is not set. Please set it in your Streamlit secrets.")
+    st.stop()
+
+try:
+    client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    st.error(f"⚠️ Error initializing Groq client: {str(e)}")
+    st.stop()
 
 def clean_response(text):
     # Remove thinking process and other tags
@@ -49,10 +76,6 @@ def clean_response(text):
     text = re.sub(r'<.*?>', '', text, flags=re.DOTALL)
     text = re.sub(r'\n\s*\n', '\n\n', text)
     return text.strip()
-
-# Title
-st.title("💬 AI Chat Assistant")
-st.markdown("Ask me anything! I'm here to help with any topic.")
 
 # Initialize chat history
 if "messages" not in st.session_state:
