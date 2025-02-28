@@ -81,6 +81,36 @@ st.markdown("""
         white-space: pre-wrap;
     }
 
+    .assistant-message h1, 
+    .assistant-message h2, 
+    .assistant-message h3 {
+        color: #60a5fa;
+        margin-top: 0.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .assistant-message ul, 
+    .assistant-message ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+    
+    .assistant-message p {
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+    
+    .assistant-message code {
+        background: #1f2937;
+        color: #e5e7eb;
+        padding: 0.2em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
     /* Form styling */
     .stForm {
         background-color: var(--chat-background);
@@ -88,7 +118,7 @@ st.markdown("""
         border-radius: 12px;
         border: 1px solid var(--border-color);
     }
-
+    
     /* Text area styling */
     .stTextArea textarea {
         background-color: var(--input-bg) !important;
@@ -101,12 +131,17 @@ st.markdown("""
         max-height: 200px !important;
         resize: vertical;
     }
-
+    
     .stTextArea textarea:focus {
         border-color: #3b82f6 !important;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-
+    
+    /* Hide the label */
+    .stTextArea label {
+        display: none;
+    }
+    
     /* Input container */
     .input-container {
         position: fixed;
@@ -146,6 +181,12 @@ st.markdown("""
         line-height: 1.5;
     }
 
+    .stTextArea textarea:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+
+    /* Send Button Styling */
     .stButton > button {
         background-color: #3b82f6 !important;
         color: white !important;
@@ -154,18 +195,14 @@ st.markdown("""
         font-weight: 600 !important;
         border: none !important;
         transition: all 0.2s !important;
+        position: absolute;
+        right: 20px;
+        bottom: 15px;
     }
 
     .stButton > button:hover {
         background-color: #2563eb !important;
         transform: translateY(-1px);
-    }
-
-    /* Button styling */
-    .stButton > button {
-        position: absolute;
-        right: 2rem;
-        bottom: 1rem;
     }
 
     /* Ensure main content isn't hidden */
@@ -188,12 +225,7 @@ st.markdown("""
         font-size: 1.1rem;
         margin-bottom: 2rem;
     }
-
-    /* Loading spinner */
-    .stSpinner > div {
-        border-color: #3b82f6 !important;
-    }
-
+    
     /* Scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
@@ -213,17 +245,37 @@ st.markdown("""
     ::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
     }
-
-    /* Chat container max height */
-    .main {
-        padding-bottom: 120px !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # Title and description
 st.title("💬 AI Chat Assistant")
 st.markdown('<p class="subtitle">Your friendly AI assistant ready to help with any topic!</p>', unsafe_allow_html=True)
+
+# Get API key from environment or secrets
+def get_api_key():
+    api_key = st.secrets.get("GROQ_API_KEY", os.getenv("GROQ_API_KEY"))
+    return api_key
+
+# Initialize Groq client
+GROQ_API_KEY = get_api_key()
+
+if not GROQ_API_KEY:
+    st.error("⚠️ GROQ_API_KEY is not set. Please set it in your Streamlit secrets.")
+    st.stop()
+
+try:
+    client = Groq(api_key=GROQ_API_KEY)
+except Exception as e:
+    st.error(f"⚠️ Error initializing Groq client: {str(e)}")
+    st.stop()
+
+def clean_response(text):
+    # Remove thinking process and other tags
+    text = re.sub(r'<div className="think-block">.*?</div>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<.*?>', '', text, flags=re.DOTALL)
+    text = re.sub(r'\n\s*\n', '\n\n', text)
+    return text.strip()
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -250,10 +302,10 @@ with st.form(key="chat_form", clear_on_submit=True):
 if submit and user_input:
     # Clean up the input but preserve intentional newlines
     cleaned_input = user_input.strip()
-
+    
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": cleaned_input})
-
+    
     # Show thinking indicator
     with st.spinner("Thinking..."):
         try:
@@ -285,16 +337,16 @@ if submit and user_input:
                 max_tokens=2048,
                 top_p=1,
             )
-
+            
             # Get and clean response
             response = clean_response(completion.choices[0].message.content)
-
+            
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": response})
-
+            
         except Exception as e:
             st.error(f"Error: {str(e)}")
-
+    
     # Rerun once to update the display
     st.experimental_rerun()
 
