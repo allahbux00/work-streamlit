@@ -249,15 +249,42 @@ with st.container():
     col1, col2 = st.columns([6,1])
     
     with col1:
+        # Initialize the session state for input if it doesn't exist
+        if "user_input" not in st.session_state:
+            st.session_state.user_input = ""
+            
         user_input = st.text_area(
             "", 
+            value=st.session_state.user_input,
             placeholder="Type your message here... (Enter to send, Shift+Enter for new line)", 
-            key="user_input", 
+            key="text_input", 
             label_visibility="collapsed",
             height=100
         )
     
     with col2:
+        # Add a hidden button that will be triggered by JavaScript
+        st.markdown("""
+        <script>
+        // Wait for the document to be fully loaded
+        window.addEventListener('load', function() {
+            // Find all textareas
+            const textareas = document.getElementsByTagName('textarea');
+            for (let textarea of textareas) {
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        // Find the visible send button
+                        const sendButton = document.querySelector('button[kind="primary"]');
+                        if (sendButton) {
+                            sendButton.click();
+                        }
+                    }
+                });
+            }
+        });
+        </script>
+        """, unsafe_allow_html=True)
         send_button = st.button("Send", use_container_width=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
@@ -312,7 +339,7 @@ if user_input and send_button:
         except Exception as e:
             st.error(f"Error: {str(e)}")
     
-    # Clear the input
+    # Clear the input using the session state
     st.session_state.user_input = ""
     
     # Rerun once to update the display
