@@ -297,6 +297,62 @@ for (let textarea of textareas) {
 </script>
 """, unsafe_allow_html=True)
 
+# Fix input styling and button positioning
+st.markdown("""
+<style>
+    /* Ensure input container is fixed at bottom */
+    .stForm {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--background-color);
+        padding: 1rem 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Dark input styling */
+    .stTextInput > div > div > input {
+        background-color: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        font-size: 16px !important;
+    }
+
+    .stTextInput > div > div > input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+
+    /* Send button styling */
+    .stButton > button {
+        position: absolute;
+        right: 2rem;
+        bottom: 1.5rem;
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 10px 20px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-1px);
+    }
+
+    /* Ensure main content isn't hidden */
+    .main {
+        padding-bottom: 120px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # Title and description
 st.title("💬 AI Chat Assistant")
 st.markdown('<p class="subtitle">Your friendly AI assistant ready to help with any topic!</p>', unsafe_allow_html=True)
