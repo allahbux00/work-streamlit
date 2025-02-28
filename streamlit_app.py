@@ -224,17 +224,17 @@ st.markdown("""
 </style>
 
 <script>
-// Handle Enter and Shift+Enter in textarea
-const textareas = document.getElementsByTagName('textarea');
-for (let textarea of textareas) {
-    textarea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const sendButton = document.querySelector('button[kind="primary"]');
-            if (sendButton) sendButton.click();
-        }
-    });
-}
+// Handle Enter key to submit the form (no newline)
+const textarea = document.getElementById('chat-input');
+const sendButton = document.getElementById('send-button');
+
+// Prevent the default behavior of the Enter key (which would add a newline)
+textarea.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendButton.click();
+    }
+});
 </script>
 """, unsafe_allow_html=True)
 
@@ -289,11 +289,10 @@ st.markdown("""
         <div style="max-width: 800px; margin: 0 auto;">
             <div class="input-group">
                 <div class="input-wrapper">
-                    <textarea id="chat-input" placeholder="Type your message here... (Enter to send)" rows="1" 
+                    <textarea id="chat-input" placeholder="Type your message here... (Press Enter to send)" rows="1" 
                         style="width: 100%; min-height: 44px; max-height: 200px; padding: 12px; border-radius: 12px; 
                         background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); 
-                        resize: none; outline: none; font-size: 16px; line-height: 1.5;"
-                        onkeydown="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); document.getElementById('send-button').click(); }">
+                        resize: none; outline: none; font-size: 16px; line-height: 1.5;">
                     </textarea>
                 </div>
                 <button id="send-button" style="display: none;">Send</button>
@@ -306,76 +305,6 @@ st.markdown("""
 with st.form(key="chat_form", clear_on_submit=True):
     user_input = st.text_input("Message", key="user_message", label_visibility="collapsed")
     submit = st.form_submit_button("Send", use_container_width=True)
-
-# Add JavaScript to handle the textarea
-st.markdown("""
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('chat-input');
-    const hiddenInput = document.querySelector('input[aria-label="Message"]');
-    const sendButton = document.getElementById('send-button');
-    
-    // Auto-resize textarea
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-    
-    // Handle form submission
-    textarea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if (this.value.trim()) {
-                hiddenInput.value = this.value;
-                sendButton.click();
-                this.value = '';
-                this.style.height = 'auto';
-            }
-        }
-    });
-});
-</script>
-<style>
-.input-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--background-color);
-    padding: 1rem 2rem;
-    border-top: 1px solid var(--border-color);
-    z-index: 1000;
-}
-
-.input-group {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-}
-
-.input-wrapper {
-    flex-grow: 1;
-    position: relative;
-}
-
-/* Hide Streamlit form elements */
-.stForm, [data-testid="stForm"] {
-    position: absolute;
-    bottom: 0;
-    visibility: hidden;
-    height: 0;
-    width: 0;
-    padding: 0;
-    margin: 0;
-}
-
-/* Ensure content doesn't go behind input */
-.main {
-    padding-bottom: 100px !important;
-    margin-bottom: 2rem;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # Handle form submission
 if submit and user_input:
@@ -390,28 +319,8 @@ if submit and user_input:
         try:
             # Call Groq API
             completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": """You are a friendly and knowledgeable AI assistant who can help with any topic. IMPORTANT RULES:
-1. NEVER show your thinking process or include any meta tags
-2. NEVER mention that you are an AI model or any specific model name
-3. Just respond directly and naturally to questions
-4. You can discuss ANY topic - science, arts, history, entertainment, daily life, etc.
-5. Respect the user's text formatting:
-   - If they provide options on separate lines, address each option separately
-   - Preserve their line breaks in your response when appropriate
-   - Use line breaks in your response for better readability
-6. Use markdown formatting for better readability:
-   - Use ## for section headings
-   - Use bullet points (-)
-   - Use **bold** for emphasis
-   - Use `quotes` for special terms
-   - Use > for important quotes or highlights
-7. Keep responses clear and well-structured
-8. Be warm, friendly and conversational"""
-                    }
-                ] + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                messages=[{"role": "system", "content": "You are a friendly and helpful AI assistant."}] + 
+                         [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 model="deepseek-r1-distill-llama-70b",
                 temperature=0.7,
                 max_tokens=2048,
