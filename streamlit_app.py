@@ -283,24 +283,6 @@ with chat_container:
         else:
             st.markdown(f'<div class="assistant-message">{content}</div>', unsafe_allow_html=True)
 
-# Fixed input area at the bottom
-st.markdown("""
-    <div class="input-container">
-        <div style="max-width: 800px; margin: 0 auto;">
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <textarea id="chat-input" placeholder="Type your message here... (Press Enter to send)" rows="1" 
-                        style="width: 100%; min-height: 44px; max-height: 200px; padding: 12px; border-radius: 12px; 
-                        background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); 
-                        resize: none; outline: none; font-size: 16px; line-height: 1.5;">
-                    </textarea>
-                </div>
-                <button id="send-button" style="display: none;">Send</button>
-            </div>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
 # Hidden form to handle the submission
 with st.form(key="chat_form", clear_on_submit=True):
     user_input = st.text_input("Message", key="user_message", label_visibility="collapsed")
