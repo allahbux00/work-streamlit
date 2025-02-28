@@ -80,7 +80,7 @@ st.markdown("""
         line-height: 1.6;
         white-space: pre-wrap;
     }
-
+    
     .assistant-message h1, 
     .assistant-message h2, 
     .assistant-message h3 {
@@ -110,7 +110,7 @@ st.markdown("""
         font-size: 0.9em;
         font-family: 'JetBrains Mono', monospace;
     }
-
+    
     /* Form styling */
     .stForm {
         background-color: var(--chat-background);
@@ -186,7 +186,6 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
     }
 
-    /* Send Button Styling */
     .stButton > button {
         background-color: #3b82f6 !important;
         color: white !important;
@@ -195,9 +194,6 @@ st.markdown("""
         font-weight: 600 !important;
         border: none !important;
         transition: all 0.2s !important;
-        position: absolute;
-        right: 20px;
-        bottom: 15px;
     }
 
     .stButton > button:hover {
@@ -205,9 +201,32 @@ st.markdown("""
         transform: translateY(-1px);
     }
 
+    /* Make the send button float right */
+    .stButton > button {
+        position: absolute;
+        right: 2rem;
+        bottom: 1rem;
+    }
+
     /* Ensure main content isn't hidden */
     .main {
         padding-bottom: 120px !important;
+    }
+
+    /* Button styling */
+    .stButton > button {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-1px);
     }
 
     /* Title styling */
@@ -225,7 +244,12 @@ st.markdown("""
         font-size: 1.1rem;
         margin-bottom: 2rem;
     }
-    
+
+    /* Loading spinner */
+    .stSpinner > div {
+        border-color: #3b82f6 !important;
+    }
+
     /* Scrollbar */
     ::-webkit-scrollbar {
         width: 8px;
@@ -244,6 +268,16 @@ st.markdown("""
 
     ::-webkit-scrollbar-thumb:hover {
         background: #6b7280;
+    }
+
+    /* Chat container max height */
+    .main {
+        padding-bottom: 120px !important;
+    }
+    
+    /* Dark theme overrides for Streamlit elements */
+    .stMarkdown, .stMarkdown p {
+        color: var(--text-color) !important;
     }
 </style>
 """, unsafe_allow_html=True)
