@@ -150,15 +150,14 @@ st.markdown("""
         right: 0;
         background: var(--background-color);
         padding: 1rem 2rem;
-        box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
         z-index: 1000;
         border-top: 1px solid var(--border-color);
-        transition: all 0.3s ease;
     }
 
     .input-group {
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         max-width: 800px;
         margin: 0 auto;
         gap: 1rem;
@@ -166,48 +165,41 @@ st.markdown("""
 
     .input-wrapper {
         flex-grow: 1;
-        position: relative;
     }
 
-    #chat-input {
+    .stTextArea textarea {
         width: 100%;
         min-height: 50px;
         max-height: 200px;
-        padding: 12px 15px;
-        border-radius: 15px;
-        background: var(--input-bg);
-        color: var(--text-color);
-        border: 2px solid var(--border-color);
+        padding: 12px;
+        border-radius: 12px;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
         resize: none;
-        outline: none;
         font-size: 16px;
         line-height: 1.5;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    #chat-input:focus {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    .stTextArea textarea:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
     }
 
-    #send-button {
+    .stButton > button {
         background-color: #3b82f6 !important;
         color: white !important;
         border-radius: 12px !important;
-        padding: 12px 20px !important;
+        padding: 10px 20px !important;
         font-weight: 600 !important;
         border: none !important;
-        transition: all 0.2s ease !important;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        transition: all 0.2s !important;
+        margin-left: auto;
     }
 
-    #send-button:hover {
+    .stButton > button:hover {
         background-color: #2563eb !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
     }
 
     /* Responsive adjustments */
@@ -216,7 +208,7 @@ st.markdown("""
             padding: 1rem;
         }
         
-        #chat-input, #send-button {
+        .stTextArea textarea, .stButton > button {
             font-size: 14px;
             padding: 10px;
         }
@@ -350,147 +342,10 @@ with chat_container:
         else:
             st.markdown(f'<div class="assistant-message">{content}</div>', unsafe_allow_html=True)
 
-# Fixed input area at the bottom
-st.markdown("""
-    <div class="input-container">
-        <div style="max-width: 800px; margin: 0 auto;">
-            <div class="input-group">
-                <div class="input-wrapper">
-                    <textarea id="chat-input" placeholder="Type your message here... (Enter to send)" rows="1" 
-                        style="width: 100%; min-height: 44px; max-height: 200px; padding: 12px; border-radius: 12px; 
-                        background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); 
-                        resize: none; outline: none; font-size: 16px; line-height: 1.5;"
-                        onkeydown="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); document.getElementById('send-button').click(); }">
-                    </textarea>
-                </div>
-                <button id="send-button" style="display: none;">Send</button>
-            </div>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
 # Hidden form to handle the submission
 with st.form(key="chat_form", clear_on_submit=True):
     user_input = st.text_input("Message", key="user_message", label_visibility="collapsed")
     submit = st.form_submit_button("Send", use_container_width=True)
-
-# Add JavaScript to handle the textarea
-st.markdown("""
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('chat-input');
-    const hiddenInput = document.querySelector('input[aria-label="Message"]');
-    const sendButton = document.getElementById('send-button');
-    
-    // Auto-resize textarea with smooth transition
-    textarea.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
-    });
-    
-    // Enhanced Enter key handling
-    textarea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            if (!e.shiftKey) {
-                e.preventDefault();
-                if (this.value.trim()) {
-                    hiddenInput.value = this.value;
-                    sendButton.click();
-                    this.value = '';
-                    this.style.height = 'auto';
-                }
-            } else {
-                // Allow Shift+Enter for multiline input
-                e.stopPropagation();
-            }
-        }
-    });
-
-    // Optional: Add send icon
-    sendButton.innerHTML = 'Send <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
-});
-</script>
-<style>
-.input-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--background-color);
-    padding: 1rem 2rem;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
-    z-index: 1000;
-    border-top: 1px solid var(--border-color);
-    transition: all 0.3s ease;
-}
-
-.input-group {
-    display: flex;
-    align-items: flex-end;
-    max-width: 800px;
-    margin: 0 auto;
-    gap: 1rem;
-}
-
-.input-wrapper {
-    flex-grow: 1;
-    position: relative;
-}
-
-#chat-input {
-    width: 100%;
-    min-height: 50px;
-    max-height: 200px;
-    padding: 12px 15px;
-    border-radius: 15px;
-    background: var(--input-bg);
-    color: var(--text-color);
-    border: 2px solid var(--border-color);
-    resize: none;
-    outline: none;
-    font-size: 16px;
-    line-height: 1.5;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-#chat-input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-}
-
-#send-button {
-    background-color: #3b82f6 !important;
-    color: white !important;
-    border-radius: 12px !important;
-    padding: 12px 20px !important;
-    font-weight: 600 !important;
-    border: none !important;
-    transition: all 0.2s ease !important;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#send-button:hover {
-    background-color: #2563eb !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .input-container {
-        padding: 1rem;
-    }
-    
-    #chat-input, #send-button {
-        font-size: 14px;
-        padding: 10px;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
 
 # Handle form submission
 if submit and user_input:
