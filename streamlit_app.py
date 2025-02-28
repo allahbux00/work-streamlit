@@ -154,65 +154,6 @@ st.markdown("""
         z-index: 1000;
         border-top: 1px solid var(--border-color);
     }
-
-    .input-group {
-        display: flex;
-        align-items: center;
-        max-width: 800px;
-        margin: 0 auto;
-        gap: 1rem;
-    }
-
-    .input-wrapper {
-        flex-grow: 1;
-    }
-
-    .stTextArea textarea {
-        width: 100%;
-        min-height: 50px;
-        max-height: 200px;
-        padding: 12px;
-        border-radius: 12px;
-        background: var(--input-bg) !important;
-        color: var(--text-color) !important;
-        border: 1px solid var(--border-color) !important;
-        resize: none;
-        font-size: 16px;
-        line-height: 1.5;
-    }
-
-    .stTextArea textarea:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-    }
-
-    .stButton > button {
-        background-color: #3b82f6 !important;
-        color: white !important;
-        border-radius: 12px !important;
-        padding: 10px 20px !important;
-        font-weight: 600 !important;
-        border: none !important;
-        transition: all 0.2s !important;
-        margin-left: auto;
-    }
-
-    .stButton > button:hover {
-        background-color: #2563eb !important;
-        transform: translateY(-1px);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .input-container {
-            padding: 1rem;
-        }
-        
-        .stTextArea textarea, .stButton > button {
-            font-size: 14px;
-            padding: 10px;
-        }
-    }
     
     /* Button styling */
     .stButton > button {
@@ -297,62 +238,6 @@ for (let textarea of textareas) {
 </script>
 """, unsafe_allow_html=True)
 
-# Fix input styling and button positioning
-st.markdown("""
-<style>
-    /* Ensure input container is fixed at bottom */
-    .stForm {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        background: var(--background-color);
-        padding: 1rem 2rem;
-        border-top: 1px solid var(--border-color);
-    }
-
-    /* Dark input styling */
-    .stTextInput > div > div > input {
-        background-color: var(--input-bg) !important;
-        color: var(--text-color) !important;
-        border: 1px solid var(--border-color) !important;
-        border-radius: 12px !important;
-        padding: 12px !important;
-        font-size: 16px !important;
-    }
-
-    .stTextInput > div > div > input:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
-    }
-
-    /* Send button styling */
-    .stButton > button {
-        position: absolute;
-        right: 2rem;
-        bottom: 1.5rem;
-        background-color: #3b82f6 !important;
-        color: white !important;
-        border-radius: 12px !important;
-        padding: 10px 20px !important;
-        font-weight: 600 !important;
-        border: none !important;
-        transition: all 0.2s !important;
-    }
-
-    .stButton > button:hover {
-        background-color: #2563eb !important;
-        transform: translateY(-1px);
-    }
-
-    /* Ensure main content isn't hidden */
-    .main {
-        padding-bottom: 120px !important;
-    }
-</style>
-""", unsafe_allow_html=True)
-
 # Title and description
 st.title("💬 AI Chat Assistant")
 st.markdown('<p class="subtitle">Your friendly AI assistant ready to help with any topic!</p>', unsafe_allow_html=True)
@@ -398,10 +283,99 @@ with chat_container:
         else:
             st.markdown(f'<div class="assistant-message">{content}</div>', unsafe_allow_html=True)
 
+# Fixed input area at the bottom
+st.markdown("""
+    <div class="input-container">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <textarea id="chat-input" placeholder="Type your message here... (Enter to send)" rows="1" 
+                        style="width: 100%; min-height: 44px; max-height: 200px; padding: 12px; border-radius: 12px; 
+                        background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); 
+                        resize: none; outline: none; font-size: 16px; line-height: 1.5;"
+                        onkeydown="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); document.getElementById('send-button').click(); }">
+                    </textarea>
+                </div>
+                <button id="send-button" style="display: none;">Send</button>
+            </div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
 # Hidden form to handle the submission
 with st.form(key="chat_form", clear_on_submit=True):
     user_input = st.text_input("Message", key="user_message", label_visibility="collapsed")
     submit = st.form_submit_button("Send", use_container_width=True)
+
+# Add JavaScript to handle the textarea
+st.markdown("""
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('chat-input');
+    const hiddenInput = document.querySelector('input[aria-label="Message"]');
+    const sendButton = document.getElementById('send-button');
+    
+    // Auto-resize textarea
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    // Handle form submission
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (this.value.trim()) {
+                hiddenInput.value = this.value;
+                sendButton.click();
+                this.value = '';
+                this.style.height = 'auto';
+            }
+        }
+    });
+});
+</script>
+<style>
+.input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--background-color);
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.input-wrapper {
+    flex-grow: 1;
+    position: relative;
+}
+
+/* Hide Streamlit form elements */
+.stForm, [data-testid="stForm"] {
+    position: absolute;
+    bottom: 0;
+    visibility: hidden;
+    height: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* Ensure content doesn't go behind input */
+.main {
+    padding-bottom: 100px !important;
+    margin-bottom: 2rem;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Handle form submission
 if submit and user_input:
