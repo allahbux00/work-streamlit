@@ -20,7 +20,7 @@ st.set_page_config(
     }
 )
 
-# Custom CSS for dark theme and fixed input with styled button
+# Custom CSS for dark theme
 st.markdown("""
 <style>
     /* Dark theme colors */
@@ -38,12 +38,12 @@ st.markdown("""
     .stApp {
         background-color: var(--background-color) !important;
     }
-
+    
     .main > div {
         padding: 2rem 3rem;
         background-color: var(--background-color);
     }
-
+    
     /* Chat container */
     .chat-container {
         max-width: 800px;
@@ -53,7 +53,7 @@ st.markdown("""
         border-radius: 20px;
         box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
     }
-
+    
     /* Messages */
     .user-message {
         background: var(--user-message-bg);
@@ -67,7 +67,7 @@ st.markdown("""
         line-height: 1.5;
         white-space: pre-wrap;
     }
-
+    
     .assistant-message {
         background: var(--assistant-message-bg);
         color: var(--text-color);
@@ -80,7 +80,7 @@ st.markdown("""
         line-height: 1.6;
         white-space: pre-wrap;
     }
-
+    
     .assistant-message h1, 
     .assistant-message h2, 
     .assistant-message h3 {
@@ -89,19 +89,19 @@ st.markdown("""
         margin-bottom: 1rem;
         font-weight: 600;
     }
-
+    
     .assistant-message ul, 
     .assistant-message ol {
         margin-left: 1.5rem;
         margin-bottom: 1rem;
         color: var(--text-color);
     }
-
+    
     .assistant-message p {
         margin-bottom: 1rem;
         color: var(--text-color);
     }
-
+    
     .assistant-message code {
         background: #1f2937;
         color: #e5e7eb;
@@ -110,7 +110,7 @@ st.markdown("""
         font-size: 0.9em;
         font-family: 'JetBrains Mono', monospace;
     }
-
+    
     /* Form styling */
     .stForm {
         background-color: var(--chat-background);
@@ -118,7 +118,7 @@ st.markdown("""
         border-radius: 12px;
         border: 1px solid var(--border-color);
     }
-
+    
     /* Text area styling */
     .stTextArea textarea {
         background-color: var(--input-bg) !important;
@@ -131,17 +131,17 @@ st.markdown("""
         max-height: 200px !important;
         resize: vertical;
     }
-
+    
     .stTextArea textarea:focus {
         border-color: #3b82f6 !important;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-
+    
     /* Hide the label */
     .stTextArea label {
         display: none;
     }
-
+    
     /* Input container */
     .input-container {
         position: fixed;
@@ -187,19 +187,25 @@ st.markdown("""
     }
 
     .stButton > button {
-        background-color: #a3c1ad !important; /* Mild green color */
+        background-color: #3b82f6 !important;
         color: white !important;
         border-radius: 12px !important;
         padding: 10px 20px !important;
         font-weight: 600 !important;
         border: none !important;
         transition: all 0.2s !important;
-        margin-left: auto;
     }
 
     .stButton > button:hover {
-        background-color: #8c9f8c !important;
+        background-color: #2563eb !important;
         transform: translateY(-1px);
+    }
+
+    /* Make the send button float right */
+    .stButton > button {
+        position: absolute;
+        right: 2rem;
+        bottom: 1rem;
     }
 
     /* Ensure main content isn't hidden */
@@ -207,9 +213,71 @@ st.markdown("""
         padding-bottom: 120px !important;
     }
 
+    /* Button styling */
+    .stButton > button {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-1px);
+    }
+
+    /* Title styling */
+    h1 {
+        color: #60a5fa !important;
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        margin-bottom: 0.5rem !important;
+        text-align: center;
+    }
+
+    .subtitle {
+        color: #94a3b8;
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Loading spinner */
+    .stSpinner > div {
+        border-color: #3b82f6 !important;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--chat-background);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+
     /* Chat container max height */
     .main {
         padding-bottom: 120px !important;
+    }
+    
+    /* Dark theme overrides for Streamlit elements */
+    .stMarkdown, .stMarkdown p {
+        color: var(--text-color) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -268,36 +336,51 @@ with st.form(key="chat_form", clear_on_submit=True):
 if submit and user_input:
     # Clean up the input but preserve intentional newlines
     cleaned_input = user_input.strip()
-
+    
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": cleaned_input})
-
+    
     # Show thinking indicator
     with st.spinner("Thinking..."):
         try:
             # Call Groq API
             completion = client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": """You are a friendly and knowledgeable AI assistant who can help with any topic."""
-                    }
-                ] + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+                messages=[{
+                    "role": "system",
+                    "content": """You are a friendly and knowledgeable AI assistant who can help with any topic. IMPORTANT RULES:
+1. NEVER show your thinking process or include any meta tags
+2. NEVER mention that you are an AI model or any specific model name
+3. Just respond directly and naturally to questions
+4. You can discuss ANY topic - science, arts, history, entertainment, daily life, etc.
+5. Respect the user's text formatting:
+   - If they provide options on separate lines, address each option separately
+   - Preserve their line breaks in your response when appropriate
+   - Use line breaks in your response for better readability
+6. Use markdown formatting for better readability:
+   - Use ## for section headings
+   - Use bullet points (-)
+   - Use **bold** for emphasis
+   - Use `quotes` for special terms
+   - Use > for important quotes or highlights
+7. Keep responses clear and well-structured
+8. Be warm, friendly and conversational"""
+                }
+            ] + [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
                 model="deepseek-r1-distill-llama-70b",
                 temperature=0.7,
                 max_tokens=2048,
                 top_p=1,
             )
-
+            
             # Get and clean response
             response = clean_response(completion.choices[0].message.content)
-
+            
             # Add assistant response to chat history
             st.session_state.messages.append({"role": "assistant", "content": response})
-
+            
         except Exception as e:
             st.error(f"Error: {str(e)}")
-
+    
     # Rerun once to update the display
     st.experimental_rerun()
 
