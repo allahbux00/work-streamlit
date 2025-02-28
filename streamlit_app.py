@@ -7,20 +7,41 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Configure Streamlit page
+# Configure Streamlit page with dark theme
 st.set_page_config(
     page_title="AI Chat Assistant",
     page_icon="💬",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
+    menu_items={
+        'Get Help': None,
+        'Report a bug': None,
+        'About': None
+    }
 )
 
-# Custom CSS for a more modern look
+# Custom CSS for dark theme
 st.markdown("""
 <style>
+    /* Dark theme colors */
+    :root {
+        --background-color: #0f1419;
+        --chat-background: #1a1f24;
+        --user-message-bg: #2563eb;
+        --assistant-message-bg: #1e2937;
+        --text-color: #e2e8f0;
+        --input-bg: #1e2937;
+        --border-color: #2d3748;
+    }
+
     /* Main container */
+    .stApp {
+        background-color: var(--background-color) !important;
+    }
+    
     .main > div {
         padding: 2rem 3rem;
+        background-color: var(--background-color);
     }
     
     /* Chat container */
@@ -28,14 +49,14 @@ st.markdown("""
         max-width: 800px;
         margin: 0 auto;
         padding: 2rem;
-        background: white;
+        background: var(--chat-background);
         border-radius: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
     }
     
     /* Messages */
     .user-message {
-        background: #6366f1;
+        background: var(--user-message-bg);
         color: white;
         padding: 1rem 1.5rem;
         border-radius: 15px;
@@ -48,12 +69,13 @@ st.markdown("""
     }
     
     .assistant-message {
-        background: #f8f9fa;
+        background: var(--assistant-message-bg);
+        color: var(--text-color);
         padding: 1.5rem;
         border-radius: 15px;
         margin: 1rem 0;
         margin-right: 20%;
-        border-left: 4px solid #6366f1;
+        border-left: 4px solid #3b82f6;
         font-size: 16px;
         line-height: 1.6;
         white-space: pre-wrap;
@@ -62,7 +84,7 @@ st.markdown("""
     .assistant-message h1, 
     .assistant-message h2, 
     .assistant-message h3 {
-        color: #4f46e5;
+        color: #60a5fa;
         margin-top: 0.5rem;
         margin-bottom: 1rem;
         font-weight: 600;
@@ -72,24 +94,36 @@ st.markdown("""
     .assistant-message ol {
         margin-left: 1.5rem;
         margin-bottom: 1rem;
+        color: var(--text-color);
     }
     
     .assistant-message p {
         margin-bottom: 1rem;
+        color: var(--text-color);
     }
     
     .assistant-message code {
-        background: #f1f5f9;
+        background: #1f2937;
+        color: #e5e7eb;
         padding: 0.2em 0.4em;
         border-radius: 4px;
         font-size: 0.9em;
         font-family: 'JetBrains Mono', monospace;
     }
     
+    /* Form styling */
+    .stForm {
+        background-color: var(--chat-background);
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+    
     /* Text area styling */
     .stTextArea textarea {
-        background-color: #f8fafc;
-        border: 2px solid #e2e8f0;
+        background-color: var(--input-bg) !important;
+        border: 1px solid var(--border-color) !important;
+        color: var(--text-color) !important;
         padding: 1rem;
         font-size: 16px;
         border-radius: 12px;
@@ -99,8 +133,8 @@ st.markdown("""
     }
     
     .stTextArea textarea:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
     
     /* Hide the label */
@@ -114,31 +148,32 @@ st.markdown("""
         bottom: 0;
         left: 0;
         right: 0;
-        background: white;
+        background: var(--background-color);
         padding: 1rem 2rem;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
         z-index: 1000;
+        border-top: 1px solid var(--border-color);
     }
     
-    /* Streamlit elements customization */
+    /* Button styling */
     .stButton > button {
-        background-color: #6366f1;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1.5rem;
-        font-weight: 600;
-        border: none;
-        transition: all 0.2s;
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        padding: 0.5rem 1.5rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s !important;
     }
     
     .stButton > button:hover {
-        background-color: #4f46e5;
+        background-color: #2563eb !important;
         transform: translateY(-1px);
     }
     
     /* Title styling */
     h1 {
-        color: #4f46e5;
+        color: #60a5fa !important;
         font-size: 2.5rem !important;
         font-weight: 700 !important;
         margin-bottom: 0.5rem !important;
@@ -146,7 +181,7 @@ st.markdown("""
     }
     
     .subtitle {
-        color: #6b7280;
+        color: #94a3b8;
         text-align: center;
         font-size: 1.1rem;
         margin-bottom: 2rem;
@@ -154,7 +189,7 @@ st.markdown("""
     
     /* Loading spinner */
     .stSpinner > div {
-        border-color: #6366f1 !important;
+        border-color: #3b82f6 !important;
     }
     
     /* Scrollbar */
@@ -164,22 +199,27 @@ st.markdown("""
     }
     
     ::-webkit-scrollbar-track {
-        background: #f1f5f9;
+        background: var(--chat-background);
         border-radius: 4px;
     }
     
     ::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: #4b5563;
         border-radius: 4px;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
+        background: #6b7280;
     }
     
     /* Chat container max height */
     .main {
         padding-bottom: 120px !important;
+    }
+    
+    /* Dark theme overrides for Streamlit elements */
+    .stMarkdown, .stMarkdown p {
+        color: var(--text-color) !important;
     }
 </style>
 
@@ -237,36 +277,108 @@ chat_container = st.container()
 # Display chat history in the container
 with chat_container:
     for message in st.session_state.messages:
-        content = message["content"].replace('\n', '<br>')  # Replace newlines with HTML breaks
+        content = message["content"].replace('\n', '<br>')
         if message["role"] == "user":
             st.markdown(f'<div class="user-message">{content}</div>', unsafe_allow_html=True)
         else:
             st.markdown(f'<div class="assistant-message">{content}</div>', unsafe_allow_html=True)
 
-# Input area at the bottom
-with st.container():
-    st.markdown('<div class="input-container">', unsafe_allow_html=True)
+# Fixed input area at the bottom
+st.markdown("""
+    <div class="input-container">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <textarea id="chat-input" placeholder="Type your message here... (Enter to send)" rows="1" 
+                        style="width: 100%; min-height: 44px; max-height: 200px; padding: 12px; border-radius: 12px; 
+                        background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); 
+                        resize: none; outline: none; font-size: 16px; line-height: 1.5;"
+                        onkeydown="if(event.keyCode == 13 && !event.shiftKey) { event.preventDefault(); document.getElementById('send-button').click(); }">
+                    </textarea>
+                </div>
+                <button id="send-button" style="display: none;">Send</button>
+            </div>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Hidden form to handle the submission
+with st.form(key="chat_form", clear_on_submit=True):
+    user_input = st.text_input("Message", key="user_message", label_visibility="collapsed")
+    submit = st.form_submit_button("Send", use_container_width=True)
+
+# Add JavaScript to handle the textarea
+st.markdown("""
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('chat-input');
+    const hiddenInput = document.querySelector('input[aria-label="Message"]');
+    const sendButton = document.getElementById('send-button');
     
-    # Use a form to handle submission
-    with st.form(key="chat_form", clear_on_submit=True):
-        col1, col2 = st.columns([6,1])
-        
-        with col1:
-            user_input = st.text_area(
-                "", 
-                placeholder="Type your message here... (Ctrl+Enter to send, Enter for new line)", 
-                key="text_input", 
-                label_visibility="collapsed",
-                height=100
-            )
-        
-        with col2:
-            submit_button = st.form_submit_button("Send", use_container_width=True)
+    // Auto-resize textarea
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    // Handle form submission
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (this.value.trim()) {
+                hiddenInput.value = this.value;
+                sendButton.click();
+                this.value = '';
+                this.style.height = 'auto';
+            }
+        }
+    });
+});
+</script>
+<style>
+.input-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--background-color);
+    padding: 1rem 2rem;
+    border-top: 1px solid var(--border-color);
+    z-index: 1000;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.input-wrapper {
+    flex-grow: 1;
+    position: relative;
+}
+
+/* Hide Streamlit form elements */
+.stForm, [data-testid="stForm"] {
+    position: absolute;
+    bottom: 0;
+    visibility: hidden;
+    height: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
+}
+
+/* Ensure content doesn't go behind input */
+.main {
+    padding-bottom: 100px !important;
+    margin-bottom: 2rem;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # Handle form submission
-if submit_button and user_input:
+if submit and user_input:
     # Clean up the input but preserve intentional newlines
     cleaned_input = user_input.strip()
     
