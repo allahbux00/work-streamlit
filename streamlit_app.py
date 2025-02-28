@@ -150,9 +150,76 @@ st.markdown("""
         right: 0;
         background: var(--background-color);
         padding: 1rem 2rem;
-        box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
         z-index: 1000;
         border-top: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: flex-end;
+        max-width: 800px;
+        margin: 0 auto;
+        gap: 1rem;
+    }
+
+    .input-wrapper {
+        flex-grow: 1;
+        position: relative;
+    }
+
+    #chat-input {
+        width: 100%;
+        min-height: 50px;
+        max-height: 200px;
+        padding: 12px 15px;
+        border-radius: 15px;
+        background: var(--input-bg);
+        color: var(--text-color);
+        border: 2px solid var(--border-color);
+        resize: none;
+        outline: none;
+        font-size: 16px;
+        line-height: 1.5;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #chat-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    #send-button {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 12px 20px !important;
+        font-weight: 600 !important;
+        border: none !important;
+        transition: all 0.2s ease !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    #send-button:hover {
+        background-color: #2563eb !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .input-container {
+            padding: 1rem;
+        }
+        
+        #chat-input, #send-button {
+            font-size: 14px;
+            padding: 10px;
+        }
     }
     
     /* Button styling */
@@ -315,24 +382,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const hiddenInput = document.querySelector('input[aria-label="Message"]');
     const sendButton = document.getElementById('send-button');
     
-    // Auto-resize textarea
+    // Auto-resize textarea with smooth transition
     textarea.addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
+        this.style.height = Math.min(this.scrollHeight, 200) + 'px';
     });
     
-    // Handle form submission
+    // Enhanced Enter key handling
     textarea.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if (this.value.trim()) {
-                hiddenInput.value = this.value;
-                sendButton.click();
-                this.value = '';
-                this.style.height = 'auto';
+        if (e.key === 'Enter') {
+            if (!e.shiftKey) {
+                e.preventDefault();
+                if (this.value.trim()) {
+                    hiddenInput.value = this.value;
+                    sendButton.click();
+                    this.value = '';
+                    this.style.height = 'auto';
+                }
+            } else {
+                // Allow Shift+Enter for multiline input
+                e.stopPropagation();
             }
         }
     });
+
+    // Optional: Add send icon
+    sendButton.innerHTML = 'Send <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';
 });
 </script>
 <style>
@@ -343,14 +418,18 @@ document.addEventListener('DOMContentLoaded', function() {
     right: 0;
     background: var(--background-color);
     padding: 1rem 2rem;
-    border-top: 1px solid var(--border-color);
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
     z-index: 1000;
+    border-top: 1px solid var(--border-color);
+    transition: all 0.3s ease;
 }
 
 .input-group {
     display: flex;
-    gap: 1rem;
     align-items: flex-end;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: 1rem;
 }
 
 .input-wrapper {
@@ -358,21 +437,57 @@ document.addEventListener('DOMContentLoaded', function() {
     position: relative;
 }
 
-/* Hide Streamlit form elements */
-.stForm, [data-testid="stForm"] {
-    position: absolute;
-    bottom: 0;
-    visibility: hidden;
-    height: 0;
-    width: 0;
-    padding: 0;
-    margin: 0;
+#chat-input {
+    width: 100%;
+    min-height: 50px;
+    max-height: 200px;
+    padding: 12px 15px;
+    border-radius: 15px;
+    background: var(--input-bg);
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+    resize: none;
+    outline: none;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Ensure content doesn't go behind input */
-.main {
-    padding-bottom: 100px !important;
-    margin-bottom: 2rem;
+#chat-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+#send-button {
+    background-color: #3b82f6 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 12px 20px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#send-button:hover {
+    background-color: #2563eb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .input-container {
+        padding: 1rem;
+    }
+    
+    #chat-input, #send-button {
+        font-size: 14px;
+        padding: 10px;
+    }
 }
 </style>
 """, unsafe_allow_html=True)
